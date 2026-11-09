@@ -2,6 +2,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 import notFoundMiddleware from './middlewares/notFound';
 import errorHandler from './middlewares/errorHandler';
+import routesHabits from './routes/habits';
 
 const app = express();
 
@@ -16,6 +17,7 @@ app.get('/health', (req, res) => {
   res.status(200).json({ message: 'Server is healthy' });
 });
 
+app.use('/habits', routesHabits);
 app.use(notFoundMiddleware);
 app.use(errorHandler);
 export default app;
