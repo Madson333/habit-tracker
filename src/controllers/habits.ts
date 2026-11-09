@@ -2,7 +2,11 @@ import { RequestHandler } from 'express';
 import { Habit } from '../models/habit';
 
 export const create: RequestHandler = async (req, res) => {
-  if (!req.body || Object.keys(req.body).length === 0) {
+  if (
+    !req.body ||
+    Object.keys(req.body).length === 0 ||
+    Array.isArray(req.body)
+  ) {
     res.status(400).json({ message: 'Request body is required' });
     return;
   }
