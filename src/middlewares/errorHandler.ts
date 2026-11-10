@@ -10,7 +10,7 @@ const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
   }
 
   if (err instanceof mongoose.Error.CastError) {
-    res.status(400).json({ message: 'Invalid ID ' });
+    res.status(400).json({ message: 'Invalid ID' });
     return;
   }
 
