@@ -11,20 +11,14 @@ export const create: RequestHandler = async (req, res) => {
     return;
   }
 
-  const { title, observations, frequency, color, icon } = req.body;
+  const habitData = req.body;
 
-  if (!title || typeof title !== 'string') {
+  if (!habitData.title || typeof habitData.title !== 'string') {
     res.status(400).json({ message: 'Title is required and must be a string' });
     return;
   }
 
-  const habit = await Habit.create({
-    title,
-    observations,
-    frequency,
-    color,
-    icon
-  });
+  const habit = await Habit.create(habitData);
   res.status(201).json(habit);
 };
 
@@ -56,20 +50,33 @@ export const update: RequestHandler = async (req, res) => {
     return;
   }
 
-  const habit = await Habit.findById(req.params.id);
+  const { title, frequency, observations, color, icon, archived } = req.body;
 
-  if (!habit) {
-    res.status(404).json({ message: 'Habit not found' });
+  const changes = Object.fromEntries(
+    Object.entries({
+      title,
+      observations,
+      frequency,
+      color,
+      icon,
+      archived
+    }).filter(([, value]) => value !== undefined)
+  );
+
+  if (Object.keys(changes).length === 0) {
+    res.status(400).json({ message: 'No valid fields provided for update' });
     return;
   }
 
-  const newHabit = req.body;
-
-  const updatedHabit = await Habit.findByIdAndUpdate(habit, newHabit, {
+  const updatedHabit = await Habit.findByIdAndUpdate(req.params.id, changes, {
     returnDocument: 'after',
     runValidators: true
   });
-  await habit.save();
+
+  if (!updatedHabit) {
+    res.status(404).json({ message: 'Habit not found' });
+    return;
+  }
 
   res.status(200).json(updatedHabit);
 };
