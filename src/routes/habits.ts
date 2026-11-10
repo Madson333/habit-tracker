@@ -1,5 +1,11 @@
 import { Router } from 'express';
-import { create, getById, list, update } from '../controllers/habits';
+import {
+  create,
+  deleteHabit,
+  getById,
+  list,
+  update
+} from '../controllers/habits';
 
 const router = Router();
 
@@ -10,5 +16,7 @@ router.get('/', list);
 router.get('/:id', getById);
 
 router.patch('/:id', update);
+
+router.delete('/:id', deleteHabit);
 
 export default router;

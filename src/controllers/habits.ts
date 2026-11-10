@@ -11,14 +11,21 @@ export const create: RequestHandler = async (req, res) => {
     return;
   }
 
-  const habitData = req.body;
+  const { title, frequency, observations, color, icon } = req.body;
 
-  if (!habitData.title || typeof habitData.title !== 'string') {
+  if (!title || typeof title !== 'string') {
     res.status(400).json({ message: 'Title is required and must be a string' });
     return;
   }
 
-  const habit = await Habit.create(habitData);
+  const habit = await Habit.create({
+    title,
+    frequency,
+    observations,
+    color,
+    icon,
+    archived: false
+  });
   res.status(201).json(habit);
 };
 
@@ -79,4 +86,13 @@ export const update: RequestHandler = async (req, res) => {
   }
 
   res.status(200).json(updatedHabit);
+};
+
+export const deleteHabit: RequestHandler = async (req, res) => {
+  const deletedHabit = await Habit.findByIdAndDelete(req.params.id);
+  if (!deletedHabit) {
+    res.status(404).json({ message: 'Habit not found' });
+    return;
+  }
+  res.status(204).end();
 };
