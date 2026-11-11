@@ -18,6 +18,12 @@ const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
     res.status(err.status).json({ message: 'Invalid request' });
     return;
   }
+
+  if (err.code === 11000) {
+    res.status(409).json({ message: 'Already checked in' });
+    return;
+  }
+
   res.status(500).json({ message: 'Internal server error' });
 };
 

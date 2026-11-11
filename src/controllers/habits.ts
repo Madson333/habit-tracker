@@ -1,5 +1,6 @@
 import { RequestHandler } from 'express';
 import { Habit } from '../models/habit';
+import { Checkin } from '../models/checkin';
 
 export const create: RequestHandler = async (req, res) => {
   if (
@@ -90,9 +91,13 @@ export const update: RequestHandler = async (req, res) => {
 
 export const deleteHabit: RequestHandler = async (req, res) => {
   const deletedHabit = await Habit.findByIdAndDelete(req.params.id);
+
+  await Checkin.deleteMany({ habit: req.params.id });
+
   if (!deletedHabit) {
     res.status(404).json({ message: 'Habit not found' });
     return;
   }
+
   res.status(204).end();
 };
