@@ -6,6 +6,7 @@ import {
   list,
   update
 } from '../controllers/habits';
+import { getStats } from '../controllers/stats';
 import { checkinsRouter } from './checkins';
 
 const router = Router();
@@ -19,6 +20,8 @@ router.get('/:id', getById);
 router.patch('/:id', update);
 
 router.delete('/:id', deleteHabit);
+
+router.get('/:id/stats', getStats);
 
 router.use('/:id/checkins', checkinsRouter);
 

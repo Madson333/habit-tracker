@@ -6,18 +6,22 @@ export function formatDate(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-export function isValidDay(dateString: string) {
-  if (typeof dateString !== 'string' || !dateRegex.test(dateString))
-    return false;
+export function isValidDay(value: unknown): value is string {
+  if (typeof value !== 'string' || !dateRegex.test(value)) return false;
 
-  const dateConverted = new Date(dateString);
+  const dateConverted = new Date(value);
 
   if (isNaN(dateConverted.getTime())) {
     return false;
   }
 
   const dateCompared = formatDate(dateConverted);
-  return dateCompared === dateString;
+  return dateCompared === value;
+}
+
+const monthRegex = /^\d{4}-(0[1-9]|1[0-2])$/;
+export function isValidMonth(value: unknown): value is string {
+  return typeof value === 'string' && monthRegex.test(value);
 }
 
 export function dayOfWeek(dateString: string) {
