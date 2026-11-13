@@ -1,6 +1,7 @@
 import { RequestHandler } from 'express';
 import { Checkin } from '../models/checkin';
 import { Habit } from '../models/habit';
+import { isValidDay } from '../utils/date';
 
 export const createCheckin: RequestHandler = async (req, res) => {
   if (
@@ -41,14 +42,14 @@ export const createCheckin: RequestHandler = async (req, res) => {
 };
 
 export const removeCheckin: RequestHandler = async (req, res) => {
-  if (!req.params.id || typeof req.params.id !== 'string') {
-    res
-      .status(400)
-      .json({ message: 'Habit ID is required and must be a string' });
+  const { date } = req.params;
+
+  const isValid = isValidDay(String(date));
+
+  if (!isValid) {
+    res.status(400).json({ message: 'Invalid date format' });
     return;
   }
-
-  const { date } = req.params;
   const checkin = await Checkin.findOneAndDelete({
     habit: req.params.id,
     date
@@ -63,8 +64,21 @@ export const removeCheckin: RequestHandler = async (req, res) => {
 };
 
 export const listCheckins: RequestHandler = async (req, res) => {
-  const fromDate = req.query.from as string | undefined;
   const toDate = req.query.to as string | undefined;
+  const fromDate = req.query.from as string | undefined;
+
+  const fromValid = fromDate ? isValidDay(fromDate) : true;
+  const toValid = toDate ? isValidDay(toDate) : true;
+
+  if (!fromValid) {
+    res.status(400).json({ message: 'Invalid from date format' });
+    return;
+  }
+
+  if (!toValid) {
+    res.status(400).json({ message: 'Invalid to date format' });
+    return;
+  }
 
   if (fromDate && typeof fromDate !== 'string') {
     res.status(400).json({ message: 'from query parameter must be a string' });
@@ -75,7 +89,7 @@ export const listCheckins: RequestHandler = async (req, res) => {
     (toDate && typeof toDate !== 'string') ||
     (fromDate && toDate && fromDate > toDate)
   ) {
-    res.status(400).json({ message: 'to query parameter must be a string' });
+    res.status(400).json({ message: 'from must be before or equal to to' });
     return;
   }
 
