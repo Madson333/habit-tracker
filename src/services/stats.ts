@@ -1,4 +1,4 @@
-import { addDays, dayOfWeek } from '../utils/date';
+import { addDays, dayOfWeek, daysInMonth } from '../utils/date';
 
 export function computeStreaks(checkins: {
   dates: string[];
@@ -57,4 +57,38 @@ export function computeStreaks(checkins: {
     currentStreak: currentCleanRun(done, frequency, firstDay, today),
     bestStreak: bestCleanRun(done, frequency, firstDay, today)
   };
+}
+
+export function monthCompletion(checkins: {
+  dates: string[];
+  frequency: number[];
+  start: string;
+  today: string;
+  month: string;
+}): { month: string; expected: number; done: number; percentage: number } {
+  const { dates, frequency, start, today, month } = checkins;
+  const done = new Set(dates);
+
+  const [year, monthNumber] = month.split('-').map(Number);
+  const lastDay = String(daysInMonth(year!, monthNumber!)).padStart(2, '0');
+  const firstOfMonth = `${month}-01`;
+  const lastOfMonth = `${month}-${lastDay}`;
+
+  const windowStart = start > firstOfMonth ? start : firstOfMonth;
+  const windowEnd = today < lastOfMonth ? today : lastOfMonth;
+
+  let expected = 0;
+  let completed = 0;
+
+  for (let day = windowStart; day <= windowEnd; day = addDays(day, 1)) {
+    if (!frequency.includes(dayOfWeek(day))) continue;
+    if (day === today && !done.has(day)) continue;
+    expected++;
+    if (done.has(day)) completed++;
+  }
+
+  const percentage =
+    expected > 0 ? Math.round((completed / expected) * 1000) / 10 : 0;
+
+  return { month, expected, done: completed, percentage };
 }
