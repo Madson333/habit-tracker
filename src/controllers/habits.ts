@@ -1,6 +1,7 @@
 import { RequestHandler } from 'express';
 import { Habit } from '../models/habit';
 import { Checkin } from '../models/checkin';
+import { formatDate, isValidDay } from '../utils/date';
 
 export const create: RequestHandler = async (req, res) => {
   if (
@@ -36,7 +37,36 @@ export const list: RequestHandler = async (req, res) => {
   const habits = await Habit.find({ archived: archivedHabits }).sort({
     createdAt: -1
   });
-  res.status(200).json(habits);
+
+  if (req.query.withTodayStatus !== 'true') {
+    res.status(200).json(habits);
+    return;
+  }
+
+  const todayQuery = req.query.today;
+
+  if (todayQuery !== undefined && !isValidDay(todayQuery)) {
+    res.status(400).json({ message: 'Invalid today date' });
+    return;
+  }
+
+  const today = todayQuery ?? formatDate(new Date());
+
+  const ids = habits.map((habit) => habit._id);
+
+  const checkinsToday = await Checkin.find({
+    habit: { $in: ids },
+    date: today
+  }).select('habit');
+
+  const doneIds = new Set(checkinsToday.map((c) => String(c.habit)));
+
+  const result = habits.map((habit) => ({
+    ...habit.toJSON(),
+    doneToday: doneIds.has(String(habit._id))
+  }));
+
+  res.status(200).json(result);
 };
 
 export const getById: RequestHandler = async (req, res) => {
