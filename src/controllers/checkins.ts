@@ -1,7 +1,9 @@
 import { RequestHandler } from 'express';
 import { Checkin } from '../models/checkin';
 import { Habit } from '../models/habit';
-import { isValidDay } from '../utils/date';
+import { addDays, formatDate, isValidDay } from '../utils/date';
+
+const MIN_CHECKIN_DATE = '2000-01-01';
 
 export const createCheckin: RequestHandler = async (req, res) => {
   if (
@@ -17,6 +19,18 @@ export const createCheckin: RequestHandler = async (req, res) => {
 
   if (!date || typeof date !== 'string') {
     res.status(400).json({ message: 'Date is required and must be a string' });
+    return;
+  }
+
+  if (!isValidDay(date)) {
+    res.status(400).json({ message: 'Invalid date format' });
+    return;
+  }
+
+  const maxDate = addDays(formatDate(new Date()), 1);
+
+  if (date < MIN_CHECKIN_DATE || date > maxDate) {
+    res.status(400).json({ message: 'Date out of allowed range' });
     return;
   }
 
@@ -80,16 +94,15 @@ export const listCheckins: RequestHandler = async (req, res) => {
     return;
   }
 
-  if (fromDate && typeof fromDate !== 'string') {
-    res.status(400).json({ message: 'from query parameter must be a string' });
+  if (fromDate && toDate && fromDate > toDate) {
+    res.status(400).json({ message: 'from must be before or equal to to' });
     return;
   }
 
-  if (
-    (toDate && typeof toDate !== 'string') ||
-    (fromDate && toDate && fromDate > toDate)
-  ) {
-    res.status(400).json({ message: 'from must be before or equal to to' });
+  const habitExists = await Habit.exists({ _id: req.params.id });
+
+  if (!habitExists) {
+    res.status(404).json({ message: 'Habit not found' });
     return;
   }
 

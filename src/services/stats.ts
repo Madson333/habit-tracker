@@ -11,7 +11,7 @@ export function computeStreaks(checkins: {
   const firstDay = checkins.start;
   const today = checkins.today;
 
-  function currentCleanRun(
+  function countCurrentStreak(
     done: Set<string>,
     frequency: number[],
     firstDay: string,
@@ -33,7 +33,7 @@ export function computeStreaks(checkins: {
     return run;
   }
 
-  function bestCleanRun(
+  function findBestStreak(
     done: Set<string>,
     frequency: number[],
     firstDay: string,
@@ -54,8 +54,8 @@ export function computeStreaks(checkins: {
   }
 
   return {
-    currentStreak: currentCleanRun(done, frequency, firstDay, today),
-    bestStreak: bestCleanRun(done, frequency, firstDay, today)
+    currentStreak: countCurrentStreak(done, frequency, firstDay, today),
+    bestStreak: findBestStreak(done, frequency, firstDay, today)
   };
 }
 
